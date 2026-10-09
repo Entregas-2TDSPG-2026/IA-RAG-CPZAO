@@ -19,6 +19,10 @@ from bs4 import BeautifulSoup, Tag
 
 SITE_ROOT = "https://arnaldojr.github.io/DisruptiveArchitectures/"
 SITEMAP_URL = SITE_ROOT + "sitemap.xml"
+AI_PATH_PREFIXES = (
+    "/DisruptiveArchitectures/aulas/IA/",
+    "/DisruptiveArchitectures/aulas/genAI/",
+)
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 CORPUS_PATH = DATA_DIR / "corpus.json"
 INDEX_PATH = Path(os.getenv("RAG_INDEX_PATH", DATA_DIR / "index.json"))
@@ -41,6 +45,12 @@ def allowed_page(url: str) -> bool:
     )
 
 
+def is_ai_page(url: str) -> bool:
+    """Limita a base aos materiais de IA e IA generativa da disciplina."""
+    path = urlparse(url).path.lower()
+    return any(path.startswith(prefix.lower()) for prefix in AI_PATH_PREFIXES)
+
+
 def fetch_sitemap(client: httpx.Client, url: str = SITEMAP_URL) -> list[str]:
     response = client.get(url)
     response.raise_for_status()
@@ -52,7 +62,7 @@ def fetch_sitemap(client: httpx.Client, url: str = SITEMAP_URL) -> list[str]:
         location = element.text.strip()
         if location.endswith(".xml") and location.startswith(SITE_ROOT):
             urls.extend(fetch_sitemap(client, location))
-        elif allowed_page(location):
+        elif allowed_page(location) and is_ai_page(location):
             urls.append(urldefrag(location).url)
     return list(dict.fromkeys(urls))
 

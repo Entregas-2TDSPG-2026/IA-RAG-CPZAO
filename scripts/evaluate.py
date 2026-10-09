@@ -11,9 +11,9 @@ CASES = [
         "source_hint": "/aulas/genAI/lab4/",
     },
     {
-        "question": "Para que serve MQTT em projetos com ESP32?",
+        "question": "Como o KNN classifica uma nova amostra?",
         "status": "answered",
-        "source_hint": "/aulas/iot/",
+        "source_hint": "/aulas/IA/lab02/",
     },
     {
         "question": "Qual a diferença entre memória da conversa e base de conhecimento?",

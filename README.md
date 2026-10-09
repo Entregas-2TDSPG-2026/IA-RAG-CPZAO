@@ -1,15 +1,15 @@
 # Assistente RAG — Disruptive Architectures
 
-Chat em português para estudar os conteúdos públicos de [Disruptive Architectures: IA e IoT](https://arnaldojr.github.io/DisruptiveArchitectures/). A aplicação recupera trechos do site, pede ao Gemini uma resposta fundamentada e mostra links das páginas usadas.
+Chat em português para estudar os conteúdos públicos de Inteligência Artificial da disciplina [Disruptive Architectures](https://arnaldojr.github.io/DisruptiveArchitectures/). A aplicação recupera trechos do site, pede ao Gemini uma resposta fundamentada e mostra links das páginas usadas.
 
 ## Arquitetura
 
-1. No build, `app.ingest` lê o sitemap oficial, extrai o conteúdo principal das páginas e grava trechos com título, seção e URL em `data/corpus.json`.
+1. No build, `app.ingest` lê o sitemap oficial, seleciona somente as páginas em `/aulas/IA/` e `/aulas/genAI/`, extrai o conteúdo principal e grava trechos com título, seção e URL em `data/corpus.json`.
 2. O modelo `gemini-embedding-2` gera `data/index.json`. O índice fica no artefato da aplicação; não há banco vetorial ou coleta a cada pergunta.
 3. `POST /api/chat` gera o embedding da pergunta, recupera até seis trechos e usa `gemini-3.6-flash` para escrever uma resposta estruturada. A API valida os números das fontes antes de retornar os links.
 4. O navegador guarda somente a conversa da aba em `sessionStorage` e envia as últimas mensagens a cada pergunta. Uma nova conversa apaga esses dados da aba.
 
-Uma coleta local em 9 de outubro de 2026 encontrou 103 páginas de IA, GenAI, IoT e avaliações. O diretório `data/` é gerado localmente e não deve ser enviado ao GitHub. Cada novo build coleta o conteúdo público vigente e recria os embeddings. O texto da base é conteúdo de terceiros: mantenha os links das fontes na interface.
+A base inclui IA tradicional, IA generativa, seus laboratórios e avaliações publicadas nessas duas seções. Conteúdos de IoT, agenda e checkpoints fora dessas seções não são indexados. O diretório `data/` é gerado localmente e não deve ser enviado ao GitHub. Cada novo build coleta o conteúdo público vigente e recria os embeddings. O texto da base é conteúdo de terceiros: mantenha os links das fontes na interface.
 
 ## Executar localmente
 
@@ -46,7 +46,7 @@ Com a chave e o índice configurados, execute:
 .venv/bin/python -m scripts.evaluate
 ```
 
-O roteiro faz perguntas reais sobre RAG e IoT, além de casos sem resposta na base e pergunta vaga. Ele confere status e páginas citadas, imprimindo as respostas para revisão humana. Para avaliar a qualidade, confirme também que **cada afirmação** é sustentada pelas fontes exibidas; um link correto sozinho não prova a resposta.
+O roteiro faz perguntas reais sobre RAG e aprendizado de máquina, além de casos sem resposta na base e pergunta vaga. Ele confere status e páginas citadas, imprimindo as respostas para revisão humana. Para avaliar a qualidade, confirme também que **cada afirmação** é sustentada pelas fontes exibidas; um link correto sozinho não prova a resposta.
 
 ## Publicar no Render
 
