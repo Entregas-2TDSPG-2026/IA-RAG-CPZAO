@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#102c32" />
+    <meta name="description" content="Assistente de estudos da disciplina Disruptive Architectures: IA e IoT." />
+    <title>Assistente de estudos | Disruptive Architectures</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <script defer src="/static/app.js"></script>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar" aria-label="Sobre o assistente">
+        <div class="brand"><span class="brand-mark" aria-hidden="true">DA</span><span>Disruptive<br />Architectures</span></div>
+        <div class="side-copy">
+          <p class="eyebrow">SEU ESPAÇO DE ESTUDO</p>
+          <h1>Uma dúvida pode abrir um caminho.</h1>
+          <p>Explore IA, IoT e os laboratórios da disciplina com respostas ligadas ao material publicado.</p>
+        </div>
+        <div class="side-bottom">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="index-status">Verificando base de conhecimento…</span>
+        </div>
+      </aside>
+
+      <main class="chat-panel">
+        <header class="chat-header">
+          <div class="assistant-avatar" aria-hidden="true">✦</div>
+          <div class="header-copy"><strong>Assistente da disciplina</strong><span>IA &amp; IoT · respostas com fontes</span></div>
+          <button id="new-chat" class="new-chat" type="button" title="Iniciar nova conversa">Nova conversa</button>
+        </header>
+
+        <div id="messages" class="messages" aria-live="polite" aria-label="Conversa">
+          <div id="welcome" class="welcome">
+            <div class="welcome-icon" aria-hidden="true">✳</div>
+            <p class="eyebrow">BEM-VINDO</p>
+            <h2>O que você quer entender hoje?</h2>
+            <p>Faça uma pergunta sobre os conteúdos da disciplina. Ao responder, eu mostro as páginas que consultei.</p>
+            <div class="suggestions" aria-label="Perguntas sugeridas">
+              <button type="button" data-question="O que é RAG e como ele funciona?">O que é RAG?</button>
+              <button type="button" data-question="Qual é a diferença entre memória de conversa e base de conhecimento?">Memória x base de conhecimento</button>
+              <button type="button" data-question="Para que serve o protocolo MQTT em IoT?">Para que serve MQTT?</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="composer-wrap">
+          <form id="chat-form" class="composer">
+            <label class="sr-only" for="message">Sua pergunta</label>
+            <textarea id="message" rows="1" maxlength="1200" placeholder="Pergunte sobre a matéria…" required></textarea>
+            <button id="send" class="send" type="submit" aria-label="Enviar pergunta" title="Enviar pergunta">➜</button>
+          </form>
+          <p class="composer-hint">As respostas usam o conteúdo público da disciplina. Confira sempre as fontes.</p>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
