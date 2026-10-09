@@ -30,7 +30,9 @@ CONTENT_TAGS = {"h1", "h2", "h3", "h4", "p", "li", "pre", "tr", "blockquote"}
 MAX_CHARS = 1450
 OVERLAP_CHARS = 180
 EMBED_BATCH_SIZE = 16
-EMBED_MIN_INTERVAL_SECONDS = 1.05
+# Cada lote pode consumir cota por item de entrada (até 16 itens), não apenas
+# por chamada HTTP. Mantém a taxa aproximada abaixo de 80 embeddings/minuto.
+EMBED_MIN_INTERVAL_SECONDS = 12.0
 EMBED_MAX_RETRIES = 8
 
 
