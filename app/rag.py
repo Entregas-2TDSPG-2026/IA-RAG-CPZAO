@@ -54,7 +54,7 @@ class RagService:
             "collected_at": index["collected_at"],
         }
         self.embedding_model = index["embedding_model"]
-        self.chat_model = os.getenv("GEMINI_CHAT_MODEL", "gemini-3.6-flash")
+        self.chat_model = os.getenv("GEMINI_CHAT_MODEL", "gemini-3.5-flash-lite")
         self.chunks = index["chunks"]
         self.vectors = [normalize(chunk["vector"]) for chunk in self.chunks]
         self.client = client or genai.Client(api_key=os.environ["GEMINI_API_KEY"])

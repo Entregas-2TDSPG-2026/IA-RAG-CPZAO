@@ -6,7 +6,7 @@ Chat em português para estudar os conteúdos públicos de Inteligência Artific
 
 1. No build, `app.ingest` lê o sitemap oficial, seleciona somente as páginas em `/aulas/IA/` e `/aulas/genAI/`, extrai o conteúdo principal e grava trechos com título, seção e URL em `data/corpus.json`.
 2. O modelo `gemini-embedding-2` gera `data/index.json`. O índice fica no artefato da aplicação; não há banco vetorial ou coleta a cada pergunta.
-3. `POST /api/chat` gera o embedding da pergunta, recupera até seis trechos e usa `gemini-3.6-flash` para escrever uma resposta estruturada. A API valida os números das fontes antes de retornar os links.
+3. `POST /api/chat` gera o embedding da pergunta, recupera até seis trechos e usa `gemini-3.5-flash-lite` para escrever uma resposta estruturada. A API valida os números das fontes antes de retornar os links.
 4. O navegador guarda somente a conversa da aba em `sessionStorage` e envia as últimas mensagens a cada pergunta. Uma nova conversa apaga esses dados da aba.
 
 A base inclui IA tradicional, IA generativa, seus laboratórios e avaliações publicadas nessas duas seções. Conteúdos de IoT, agenda e checkpoints fora dessas seções não são indexados. O diretório `data/` é gerado localmente e não deve ser enviado ao GitHub. Cada novo build coleta o conteúdo público vigente e recria os embeddings. O texto da base é conteúdo de terceiros: mantenha os links das fontes na interface.
