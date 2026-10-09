@@ -6,6 +6,7 @@ import argparse
 import hashlib
 import json
 import os
+import random
 import re
 import time
 import xml.etree.ElementTree as ET
@@ -24,6 +25,9 @@ INDEX_PATH = Path(os.getenv("RAG_INDEX_PATH", DATA_DIR / "index.json"))
 CONTENT_TAGS = {"h1", "h2", "h3", "h4", "p", "li", "pre", "tr", "blockquote"}
 MAX_CHARS = 1450
 OVERLAP_CHARS = 180
+EMBED_BATCH_SIZE = 16
+EMBED_MIN_INTERVAL_SECONDS = 1.05
+EMBED_MAX_RETRIES = 8
 
 
 def allowed_page(url: str) -> bool:
@@ -160,6 +164,28 @@ def chunk_page(page: dict) -> list[dict]:
     return chunks
 
 
+def retry_delay_seconds(error: Exception, attempt: int) -> float:
+    """Honor RetryInfo from Gemini and fall back to bounded exponential backoff."""
+    details = getattr(error, "details", {})
+    error_body = details.get("error", details) if isinstance(details, dict) else {}
+    retry_delay = None
+    if isinstance(error_body, dict):
+        for detail in error_body.get("details", []):
+            if not isinstance(detail, dict):
+                continue
+            if str(detail.get("@type", "")).endswith("RetryInfo"):
+                value = str(detail.get("retryDelay", ""))
+                match = re.fullmatch(r"([0-9]+(?:\.[0-9]+)?)s", value)
+                if match:
+                    retry_delay = float(match.group(1))
+                    break
+    if retry_delay is None:
+        message = getattr(error, "message", "") or str(error)
+        match = re.search(r"retry in ([0-9]+(?:\.[0-9]+)?)\s*s", message, re.I)
+        retry_delay = float(match.group(1)) if match else min(2**attempt, 60)
+    return min(max(retry_delay, 1.0) + random.uniform(0.2, 0.8), 90.0)
+
+
 def collect() -> dict:
     with httpx.Client(
         timeout=25,
@@ -222,8 +248,9 @@ def embed(corpus: dict) -> dict:
     client = genai.Client(api_key=key)
     indexed: list[dict] = []
     chunks = corpus["chunks"]
-    for start in range(0, len(chunks), 16):
-        batch = chunks[start : start + 16]
+    last_request_at: float | None = None
+    for start in range(0, len(chunks), EMBED_BATCH_SIZE):
+        batch = chunks[start : start + EMBED_BATCH_SIZE]
         contents = [
             types.Content(
                 parts=[
@@ -237,7 +264,12 @@ def embed(corpus: dict) -> dict:
             )
             for item in batch
         ]
-        for attempt in range(5):
+        for attempt in range(EMBED_MAX_RETRIES):
+            if last_request_at is not None:
+                wait = EMBED_MIN_INTERVAL_SECONDS - (time.monotonic() - last_request_at)
+                if wait > 0:
+                    time.sleep(wait)
+            last_request_at = time.monotonic()
             try:
                 result = client.models.embed_content(
                     model=model,
@@ -245,10 +277,20 @@ def embed(corpus: dict) -> dict:
                     config=types.EmbedContentConfig(output_dimensionality=768),
                 )
                 break
-            except Exception:
-                if attempt == 4:
+            except Exception as exc:
+                status_code = getattr(exc, "code", None)
+                retryable = status_code in {408, 429} or (
+                    isinstance(status_code, int) and 500 <= status_code < 600
+                )
+                if not retryable or attempt == EMBED_MAX_RETRIES - 1:
                     raise
-                time.sleep(min(2**attempt * 3, 24))
+                delay = retry_delay_seconds(exc, attempt)
+                print(
+                    f"Gemini limitou embeddings; nova tentativa em {delay:.1f}s "
+                    f"(tentativa {attempt + 2}/{EMBED_MAX_RETRIES}).",
+                    flush=True,
+                )
+                time.sleep(delay)
         if len(result.embeddings) != len(batch):
             raise RuntimeError("A API retornou quantidade inesperada de embeddings.")
         for item, embedding in zip(batch, result.embeddings, strict=True):
